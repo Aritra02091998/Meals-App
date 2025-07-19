@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:meals_app/data/dummy_data.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:meals_app/providers/meals_providers.dart';
 import 'package:meals_app/models/meal_blueprint.dart';
 import 'package:meals_app/screens/categories_screen.dart';
 import 'package:meals_app/screens/meals_screen.dart';
@@ -13,16 +14,16 @@ const initialFilters = {
   AppliedFilters.vegan: false,
 };
 
-class TabScreen extends StatefulWidget {
+class TabScreen extends ConsumerStatefulWidget {
   const TabScreen({super.key});
 
   @override
-  State<TabScreen> createState() {
+  ConsumerState<TabScreen> createState() {
     return _TabScreenState();
   }
 }
 
-class _TabScreenState extends State<TabScreen> {
+class _TabScreenState extends ConsumerState<TabScreen> {
   // Class variable: To switch between screens present in the lower Tab
   // 0: Categories, 1: Favourites.
   int _selectedPageIndex = 0;
@@ -78,8 +79,12 @@ class _TabScreenState extends State<TabScreen> {
   @override
   Widget build(BuildContext context) {
 
+    // Accessing the dummyMeals List using the riverpod providers.
+    final meals = ref.watch(mealsProvider);
+
     // Class Variable.
-    final List<MealBlueprint> availableFilteredMeals = dummyMeals.where((meal) {
+    final List<MealBlueprint> availableFilteredMeals = 
+    meals.where((meal) {
       if (_selectedFilters[AppliedFilters.glutenFree]! && !meal.isGlutenFree) {
         return false;
       }
