@@ -7,13 +7,11 @@ class MealsScreen extends StatelessWidget {
 
   final String? title;
   final List<MealBlueprint> meals;
-  final void Function(MealBlueprint) addOrRemoveFromFavourites;
 
   const MealsScreen({
     super.key, 
     this.title, 
     required this.meals,
-    required this.addOrRemoveFromFavourites
   });
 
   void onSelectMealNavigate(BuildContext context, MealBlueprint meal) {
@@ -23,7 +21,6 @@ class MealsScreen extends StatelessWidget {
         builder: (ctx) {
           return MealDetailsScreen(
             meal: meal,
-            addOrRemoveFromFavourites: addOrRemoveFromFavourites,
           );
         },
       ),

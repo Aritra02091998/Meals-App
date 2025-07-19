@@ -7,12 +7,10 @@ import 'package:meals_app/data/dummy_data.dart';
 
 class CategoriesScreen extends StatelessWidget {
 
-  final void Function(MealBlueprint) addOrRemoveFromFavourites;
   final List<MealBlueprint> availableFilteredMeals;
 
   const CategoriesScreen({
     super.key,
-    required this.addOrRemoveFromFavourites,
     required this.availableFilteredMeals,
   });
 
@@ -29,7 +27,6 @@ class CategoriesScreen extends StatelessWidget {
           return MealsScreen(
             title: category.title, 
             meals: filteredCategoryMeals,
-            addOrRemoveFromFavourites: addOrRemoveFromFavourites,
           );
         },
       ),

@@ -1,27 +1,51 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:meals_app/models/meal_blueprint.dart';
+import 'package:meals_app/providers/favourites_provider.dart';
 
-class MealDetailsScreen extends StatelessWidget {
+class MealDetailsScreen extends ConsumerWidget {
+
+  // Class variable.
   final MealBlueprint meal;
-  final void Function(MealBlueprint) addOrRemoveFromFavourites;
 
-  const MealDetailsScreen({
-    super.key, 
-    required this.meal, 
-    required this.addOrRemoveFromFavourites
-  });
+  const MealDetailsScreen({super.key, required this.meal});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+
+    // Local variables.
+    final addOrRemoveFromFavourites = 
+    ref.read(favouriteMealsProvider.notifier).addOrRemoveFromFavourites;
+
+    final List<MealBlueprint> favouriteMeals = ref.watch(favouriteMealsProvider);
+    final bool isThisMealFavourite = favouriteMeals.contains(meal);
+
     return Scaffold(
       appBar: AppBar(
         title: Text(meal.title),
         actions: [
           IconButton(
             onPressed: () {
-              addOrRemoveFromFavourites(meal);
+              
+              bool isMealAddedToFav = addOrRemoveFromFavourites(meal);
+
+              // Display Snack Message.
+              ScaffoldMessenger.of(context).clearSnackBars();
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(
+                    isMealAddedToFav? 'Meal Added to Favourites' : 
+                    'Meal Removed from Favourites'
+                  ), 
+                  duration: Duration(seconds: 2)
+                )
+              );
+  
             },
-            icon: const Icon(Icons.star_border),
+            icon: Icon(
+              isThisMealFavourite? Icons.star :
+              Icons.star_border
+            ),
           ),
         ],
       ),

@@ -6,13 +6,8 @@ import 'package:meals_app/screens/categories_screen.dart';
 import 'package:meals_app/screens/meals_screen.dart';
 import 'package:meals_app/widgets/MainDrawer.dart';
 import 'package:meals_app/screens/filters_screen.dart';
-
-const initialFilters = {
-  AppliedFilters.glutenFree: false,
-  AppliedFilters.lactoseFree: false,
-  AppliedFilters.vegetarian: false,
-  AppliedFilters.vegan: false,
-};
+import 'package:meals_app/providers/favourites_provider.dart';
+import 'package:meals_app/providers/filters_provider.dart';
 
 class TabScreen extends ConsumerStatefulWidget {
   const TabScreen({super.key});
@@ -27,26 +22,6 @@ class _TabScreenState extends ConsumerState<TabScreen> {
   // Class variable: To switch between screens present in the lower Tab
   // 0: Categories, 1: Favourites.
   int _selectedPageIndex = 0;
-  final List<MealBlueprint> _favouriteMeals = [];
-  Map<AppliedFilters, bool> _selectedFilters = initialFilters;
-
-  void _showMessageOnFavouriteBtnPress(String message) {
-    ScaffoldMessenger.of(context).clearSnackBars();
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message), duration: Duration(seconds: 2)));
-  }
-
-  void _addOrRemoveFromFavourites(MealBlueprint meal) {
-    bool isExisting = _favouriteMeals.contains(meal);
-    setState(() {
-      if (isExisting) {
-        _favouriteMeals.remove(meal);
-        _showMessageOnFavouriteBtnPress('Meal is no longer a favourite.');
-      } else {
-        _favouriteMeals.add(meal);
-        _showMessageOnFavouriteBtnPress('Meal is now a favourite.');
-      }
-    });
-  }
 
   // Method to switch the screens.
   // From the Bottom Nav Bar.
@@ -61,57 +36,43 @@ class _TabScreenState extends ConsumerState<TabScreen> {
       Navigator.pop(context);
     } else if (identifier == 'Filters') {
       Navigator.pop(context);
-      final returnedMapOfFiltersFromFilterScreen = await Navigator.push<Map<AppliedFilters, bool>>(
+      await Navigator.push<Map<AppliedFilters, bool>>(
         context,
-        MaterialPageRoute(builder: 
-          (context) => const FilterScreen(
-            currentFilters: initialFilters,
-          )
-        ),
+        MaterialPageRoute(builder: (context) => const FilterScreen()),
       );
-
-      setState(() {
-        _selectedFilters = returnedMapOfFiltersFromFilterScreen ?? initialFilters;
-      });
     }
   }
 
   @override
   Widget build(BuildContext context) {
-
     // Accessing the dummyMeals List using the riverpod providers.
     final meals = ref.watch(mealsProvider);
+    final activeFilters = ref.watch(filterProvider);
 
     // Class Variable.
-    final List<MealBlueprint> availableFilteredMeals = 
-    meals.where((meal) {
-      if (_selectedFilters[AppliedFilters.glutenFree]! && !meal.isGlutenFree) {
+    final List<MealBlueprint> availableFilteredMeals = meals.where((meal) {
+      if (activeFilters[AppliedFilters.glutenFree]! && !meal.isGlutenFree) {
         return false;
       }
-      if (_selectedFilters[AppliedFilters.lactoseFree]! && !meal.isLactoseFree) {
+      if (activeFilters[AppliedFilters.lactoseFree]! && !meal.isLactoseFree) {
         return false;
       }
-      if (_selectedFilters[AppliedFilters.vegetarian]! && !meal.isVegetarian) {
+      if (activeFilters[AppliedFilters.vegetarian]! && !meal.isVegetarian) {
         return false;
       }
-      if (_selectedFilters[AppliedFilters.vegan]! && !meal.isVegan) {
+      if (activeFilters[AppliedFilters.vegan]! && !meal.isVegan) {
         return false;
       }
       return true;
     }).toList();
 
-    Widget activePage = CategoriesScreen(
-      addOrRemoveFromFavourites: _addOrRemoveFromFavourites,
-      availableFilteredMeals: availableFilteredMeals,
-    );
+    Widget activePage = CategoriesScreen(availableFilteredMeals: availableFilteredMeals);
     String activePageTitle = 'Categories';
 
     if (_selectedPageIndex == 1) {
+      final favouriteMeals = ref.watch(favouriteMealsProvider);
       activePageTitle = 'Your Favourites';
-      activePage = MealsScreen(
-        meals: _favouriteMeals, 
-        addOrRemoveFromFavourites: _addOrRemoveFromFavourites
-      );
+      activePage = MealsScreen(meals: favouriteMeals);
     }
 
     return Scaffold(
